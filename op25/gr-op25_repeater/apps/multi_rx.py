@@ -169,6 +169,7 @@ class channel(object):
         self.tb = tb
         self.raw_sink = None
         self.raw_file = None
+        self.raw_udp = None
         self.throttle = None
         self.nbfm = None
         self.nbfm_mode = 0
@@ -679,7 +680,23 @@ class rx_block (gr.top_block):
                 chan.throttle.set_max_noutput_items(chan.symbol_rate/50);
                 self.connect(chan.raw_file, chan.throttle)
                 self.connect(chan.throttle, chan.decoder)
-                self.set_interactive(False) # this is non-interactive 'replay' session 
+                self.set_interactive(False) # this is non-interactive 'replay' session
+            elif ("upd_port" in cfg) and (cfg['udp_port'] != 0):
+                if ("udp_host" in cfg) and (cfg['udp_host'] != ""):
+                    udp_host = cfg['udp_host']
+                else:
+                    udp_host = '127.0.0.1'
+                if ("udp_packet_size" in cfg) and (cfg['udp_packet_size'] != 0):
+                    udp_packet_size = cfg['udp_packet_size']
+                else:
+                    udp_packet_size = 1472
+                sys.stderr.write("%s Reading raw symbols from udp: %s:%d\n" % (log_ts.get(), udp_host, cfg['udp_port']))
+                chan.raw_udp = blocks.udp_source(gr.sizeof_gr_complex, udp_host, cfg['udp_port'], udp_packet_size)
+                chan.throttle = blocks.throttle(gr.sizeof_gr_complex, chan.symbol_rate)
+                chan.throttle.set_max_noutput_items(chan.symbol_rate / 50)
+                self.connect(chan.raw_udp, chan.throttle)
+                self.connect(chan.throttle, chan.decoder)
+                self.set_interactive(False)  # this is non-interactive 'replay' session
             else:
                 self.connect(dev.src, chan.demod, chan.decoder)
                 if ("raw_output" in cfg) and (cfg['raw_output'] != ""):
