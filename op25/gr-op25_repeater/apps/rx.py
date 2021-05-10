@@ -146,7 +146,7 @@ class p25_rx_block (gr.top_block):
         self.ui_timeout = 5.0
 
         self.src = None
-        if (not options.ifile) and (not options.input) and (not options.audio) and (not options.audio_if) and (not options.symbols):
+        if (not options.ifile) and (not options.input) and (not options.audio) and (not options.audio_if) and (not options.symbols) and (not options.listen_udp_port):
             # check if osmocom is accessible
             try:
                 import osmosdr
