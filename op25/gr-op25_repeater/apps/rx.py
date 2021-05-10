@@ -242,6 +242,8 @@ class p25_rx_block (gr.top_block):
             self.open_audio(self.channel_rate, options.gain, options.audio_input)
         elif options.ifile:
             self.open_ifile2(self.channel_rate, options.ifile)
+        elif options.listen_udp_port:
+            self.open_udp(self.channel_rate, options.listen_udp_port, options.listen_udp_host, options.listen_udp_packet_size)
         elif options.symbols:
             self.open_symbols(self.symbol_rate, options.symbols, options.seek)
         else:
@@ -842,6 +844,12 @@ class p25_rx_block (gr.top_block):
         self.connect(source, throttle)
         self.__build_graph(throttle, capture_rate)
 
+    def open_udp(self, capture_rate, port, host='0.0.0.0', pkt_size=1472):
+        source = blocks.udp_source(gr.sizeof_gr_complex, host, port, pkt_size)
+        throttle = blocks.throttle(gr.sizeof_gr_complex, capture_rate)
+        self.connect(source, throttle)
+        self.__build_graph(throttle, capture_rate)
+
     def open_symbols(self, symbol_rate, file_name, file_seek):
         sys.stderr.write("Reading raw symbols from file: %s\n" % self.options.symbols)
         source = blocks.file_source(gr.sizeof_char, file_name, False)
@@ -1053,6 +1061,9 @@ class rx_main(object):
         parser.add_option("-d", "--fine-tune", type="eng_float", default=0.0, help="fine tuning")
         parser.add_option("-2", "--phase2-tdma", action="store_true", default=False, help="enable phase2 tdma decode")
         parser.add_option("-Z", "--decim-amt", type="int", default=1, help="spectrum decimation")
+        parser.add_option("--listen-udp-port", type="int", default=None, help="udp port")
+        parser.add_option("--listen-udp-host", type="string", default="0.0.0.0", help="udp listening host")
+        parser.add_option("--listen-udp-packet-size", type="int", default=1472, help="udp packet size")
         (options, args) = parser.parse_args()
         if len(args) != 0:
             parser.print_help()
