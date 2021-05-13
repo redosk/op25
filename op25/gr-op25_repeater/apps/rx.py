@@ -847,9 +847,9 @@ class p25_rx_block (gr.top_block):
     def open_udp(self, capture_rate, port, host='0.0.0.0', pkt_size=1472):
         sys.stderr.write("listening on %s:%d (packet size : %d, capture rate : %d)\n" % (host, port, pkt_size, capture_rate))
         source = blocks.udp_source(gr.sizeof_gr_complex, host, port, pkt_size)
-        throttle = blocks.throttle(gr.sizeof_gr_complex, capture_rate)
-        self.connect(source, throttle)
-        self.__build_graph(throttle, capture_rate)
+        #throttle = blocks.throttle(gr.sizeof_gr_complex, capture_rate)
+        #self.connect(source, throttle)
+        self.__build_graph(source, capture_rate)
 
     def open_symbols(self, symbol_rate, file_name, file_seek):
         sys.stderr.write("Reading raw symbols from file: %s\n" % self.options.symbols)

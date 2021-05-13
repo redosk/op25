@@ -59,6 +59,7 @@ class meta_server(threading.Thread):
         self.fmt_idle = from_dict(self.cfg, 'meta_format_idle', '[idle]')
         self.fmt_tgid = from_dict(self.cfg, 'meta_format_tgid', '[%TGID%]')
         self.fmt_tag = from_dict(self.cfg, 'meta_format_tag', '[%TGID%] %TAG%')
+        sys.stderr.write("meta server starting\n")
         self.start()
 
     def load_json(self, metacfg):

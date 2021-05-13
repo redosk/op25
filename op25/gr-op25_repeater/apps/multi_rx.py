@@ -72,6 +72,8 @@ from gr_gnuplot import eye_sink_f
 from gr_gnuplot import mixer_sink_c
 from gr_gnuplot import tuner_sink_f
 
+from pprint import pprint
+
 sys.path.append('tdma')
 import lfsr
 
@@ -156,7 +158,7 @@ class device(object):
 
 class channel(object):
     def __init__(self, config, dev, verbosity, msgq_id, rx_q, tb):
-        sys.stderr.write('channel (dev %s): %s\n' % (dev.name, config))
+        #sys.stderr.write('channel (dev %s): %s\n' % (dev.name, config))
         self.verbosity = verbosity
         ch_name = str(from_dict(config, 'name', ""))
         self.name = ("[%d] %s" % (msgq_id, ch_name)) if ch_name != "" else ("[%d]" % msgq_id) 
@@ -197,12 +199,12 @@ class channel(object):
 
         else:                             # P25, DMR, NXDN and everything else
             self.demod = p25_demodulator.p25_demod_cb(
-                             input_rate = dev.sample_rate,
+                             input_rate = 50000,
                              demod_type = config['demod_type'],
                              filter_type = config['filter_type'],
                              excess_bw = config['excess_bw'],
-                             relative_freq = (dev.frequency + dev.offset + dev.fractional_corr) - self.frequency,
-                             offset = dev.offset,
+                             relative_freq = 0,
+                             offset = 0,
                              if_rate = config['if_rate'],
                              symbol_rate = self.symbol_rate)
             self.decoder = op25_repeater.frame_assembler(str(config['destination']), verbosity, msgq_id, rx_q)
@@ -335,10 +337,10 @@ class channel(object):
             sink = fft_sink_c(plot_name=("Ch:%s" % self.name), chan=self.msgq_id)
             self.sinks['fft'] = (sink, self.toggle_fft_plot)
             self.set_plot_destination('fft')
-            sink.set_offset(self.device.offset)
-            sink.set_center_freq(self.device.frequency)
-            sink.set_relative_freq(self.device.frequency - self.frequency)
-            sink.set_width(self.device.sample_rate)
+      #      sink.set_offset(self.device.offset)
+      #      sink.set_center_freq(self.device.frequency)
+      #      sink.set_relative_freq(self.device.frequency - self.frequency)
+            sink.set_width(50000)
             self.tb.lock()
             self.demod.connect_complex('src', sink)
             self.tb.unlock()
@@ -645,13 +647,13 @@ class rx_block (gr.top_block):
         self.channels = []
         for cfg in config:
             dev = self.find_device(cfg)
-            if (dev is None) and 'frequency' in cfg:
-                sys.stderr.write("* * * Frequency %d not within spectrum band of any device - ignoring!\n" % cfg['frequency'])
-                continue
-            elif dev is None:
+#            if (dev is None) and 'frequency' in cfg:
+#                sys.stderr.write("* * * Frequency %d not within spectrum band of any device - ignoring!\n" % cfg['frequency'])
+#                continue
+            if dev is None and "udp_port" not in cfg:
                 sys.stderr.write("* * * Channel '%s' not attached to any device - ignoring!\n" % cfg['name'])
                 continue
-            elif dev.tunable:
+            elif dev is not None and dev.tunable:
                 for ch in self.channels:
                     if ch.device == dev:
                         sys.stderr.write("* * * Channel '%s' cannot share a tunable device - ignoring!\n" % cfg['name'])
@@ -681,7 +683,7 @@ class rx_block (gr.top_block):
                 self.connect(chan.raw_file, chan.throttle)
                 self.connect(chan.throttle, chan.decoder)
                 self.set_interactive(False) # this is non-interactive 'replay' session
-            elif ("upd_port" in cfg) and (cfg['udp_port'] != 0):
+            elif ("udp_port" in cfg) and (cfg['udp_port'] != 0):
                 if ("udp_host" in cfg) and (cfg['udp_host'] != ""):
                     udp_host = cfg['udp_host']
                 else:
@@ -692,12 +694,14 @@ class rx_block (gr.top_block):
                     udp_packet_size = 1472
                 sys.stderr.write("%s Reading raw symbols from udp: %s:%d\n" % (log_ts.get(), udp_host, cfg['udp_port']))
                 chan.raw_udp = blocks.udp_source(gr.sizeof_gr_complex, udp_host, cfg['udp_port'], udp_packet_size)
-                chan.throttle = blocks.throttle(gr.sizeof_gr_complex, chan.symbol_rate)
-                chan.throttle.set_max_noutput_items(chan.symbol_rate / 50)
-                self.connect(chan.raw_udp, chan.throttle)
-                self.connect(chan.throttle, chan.decoder)
+                #chan.throttle = blocks.throttle(gr.sizeof_gr_complex, chan.symbol_rate)
+                #chan.throttle.set_max_noutput_items(chan.symbol_rate / 50)
+                #self.connect(chan.raw_udp, chan.throttle)
+                #self.connect(chan.throttle, chan.demod, chan.decoder)
+                self.connect(chan.raw_udp, chan.demod, chan.decoder)
                 self.set_interactive(False)  # this is non-interactive 'replay' session
             else:
+                sys.stderr.write("Kikou %d\n" % cfg['udp_port'])
                 self.connect(dev.src, chan.demod, chan.decoder)
                 if ("raw_output" in cfg) and (cfg['raw_output'] != ""):
                     sys.stderr.write("%s Saving raw symbols to file: %s\n" % (log_ts.get(), cfg['raw_output']))
