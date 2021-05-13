@@ -650,7 +650,7 @@ class rx_block (gr.top_block):
 #            if (dev is None) and 'frequency' in cfg:
 #                sys.stderr.write("* * * Frequency %d not within spectrum band of any device - ignoring!\n" % cfg['frequency'])
 #                continue
-            if dev is None and "udp_port" not in cfg:
+            if dev is None and "udp_port" not in cfg and "raw_output" not in cfg:
                 sys.stderr.write("* * * Channel '%s' not attached to any device - ignoring!\n" % cfg['name'])
                 continue
             elif dev is not None and dev.tunable:
