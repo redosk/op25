@@ -8,6 +8,7 @@ for i in `find records -iname '*.finished'`
     sox -c 1 -r 8000 -b 16 -e signed-integer --endian little -t raw ${basename}.wav ${basename}.ogg
     if [ $? -eq 0 ]
       then
+        echo "${basename} done."
         rm ${basename}.wav
         rm ${basename}.finished
     fi
