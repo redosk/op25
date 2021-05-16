@@ -429,11 +429,11 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
 	char cwd[100];
 	char outputname[31];
     getcwd(cwd,99);
-    sprintf(fname, "%s/chan-%d.id", cwd, d_chan);
+    sprintf(fname, "%s/chan-%d.id", cwd, slot_id);
     FILE* fp = fopen(fname, "r");
     fread(outputname, 1, 30);
     fclose(fp);
-    sprintf(fname, "%s/%s.wav", cwd, outputfname);
+    sprintf(fname, "%s/%s.wav", cwd, outputname);
     fp = fopen(fname, "a");
     fwrite(samp_buf, sizeof(int16_t), NSAMP_OUTPUT, fp);
     fclose(fp);
