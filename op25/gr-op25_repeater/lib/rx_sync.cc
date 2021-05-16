@@ -431,7 +431,8 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
     getcwd(cwd,99);
     sprintf(fname, "%s/chan-%d.id", cwd, slot_id);
     FILE* fp = fopen(fname, "r");
-    fread(outputname, 1, 30, fp);
+    int nb = fread(outputname, 1, 30, fp);
+    outputname[nb] = '\0';
     fclose(fp);
     sprintf(fname, "%s/%s.wav", cwd, outputname);
     fp = fopen(fname, "a");

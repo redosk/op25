@@ -555,12 +555,15 @@ dmr_slot::decode_vlch(uint8_t* vlch) {
     sprintf(fname, "%s/chan-%d.id", cwd, d_chan);
 
 	if (d_debug >= 10) {
-		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d\n",  logts.get(d_msgq_id),	d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs);
+		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d\n", logts.get(d_msgq_id), d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs);
 	}
 
     FILE *fp = fopen(fname, "w");
-    char *ts = logts.get(d_msgq_id);
+    const char *ts = logts.get(d_msgq_id);
     fprintf(fp, "%c%c%c%c%c%c_%c%c%c%c%c%c-%d-%d", ts[6], ts[7], ts[0], ts[1], ts[3], ts[4], ts[9], ts[10], ts[12], ts[13], ts[15], ts[16], get_lc_dstaddr(), get_lc_srcaddr()&0xffff);
+    if (d_debug >= 1) {
+        fprintf(stderr, "Enregistrement : %c%c%c%c%c%c_%c%c%c%c%c%c-%d-%d\n", ts[6], ts[7], ts[0], ts[1], ts[3], ts[4], ts[9], ts[10], ts[12], ts[13], ts[15], ts[16], get_lc_dstaddr(), get_lc_srcaddr()&0xffff);
+    }
     fclose(fp);
 	// TODO: add known FLCO opcodes
 
