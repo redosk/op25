@@ -553,9 +553,10 @@ dmr_slot::decode_vlch(uint8_t* vlch) {
 	if (d_debug >= 10) {
 		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d\n",  logts.get(d_msgq_id),	d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs);
 	}
-    sprintf(fname, 'chan-%d-%d.id', d_chan, get_slot_cc());
-    FILE *fp = fopen(fname, 'w');
+    sprintf(fname, "chan-%d-%x.id", d_chan, get_slot_cc());
+    FILE *fp = fopen(fname, "w");
     fprintf(fp, "%s|%d|%d", logts.get(d_msgq_id), get_lc_dstaddr(), get_lc_srcaddr());
+    fclose(fp);
 	// TODO: add known FLCO opcodes
 
 	return rc;
