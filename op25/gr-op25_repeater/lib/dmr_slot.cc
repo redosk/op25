@@ -533,7 +533,7 @@ dmr_slot::decode_pdp_34data(uint8_t* pdp) {
 
 bool
 dmr_slot::decode_vlch(uint8_t* vlch) {
-    char fname[120];
+    char fname[1500];
 	// Apply VLCH mask
 	for (int i = 0; i < 24; i++)
 		vlch[i+72] ^= VOICE_LC_HEADER_CRC_MASK[i];
@@ -550,9 +550,9 @@ dmr_slot::decode_vlch(uint8_t* vlch) {
 	}
 	send_msg(lc_msg, M_DMR_SLOT_VLC);
 
-    char cwd[100];
+    char cwd[1400];
     getcwd(cwd,99);
-    sprintf(fname, "%s/chan-%d.id", cwd, d_chan);
+    sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), d_chan);
 
 	if (d_debug >= 10) {
 		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d\n", logts.get(d_msgq_id), d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs);

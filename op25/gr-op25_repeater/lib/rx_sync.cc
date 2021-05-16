@@ -425,16 +425,17 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
 		samp_buf[i] = snd;
 	}
 
-	char fname[150];
-	char cwd[100];
-	char outputname[31];
+	char fname[1500];
+	char cwd[1400];
+	char outputname[101];
     getcwd(cwd,99);
-    sprintf(fname, "%s/chan-%d.id", cwd, slot_id);
+    sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), slot_id);
+    fprintf(stderr, "%s\n", fname);
     FILE* fp = fopen(fname, "r");
     int nb = fread(outputname, 1, 30, fp);
     outputname[nb] = '\0';
     fclose(fp);
-    sprintf(fname, "%s/%s.wav", cwd, outputname);
+    sprintf(fname, "%s/records/%s.wav", cwd, outputname);
     fp = fopen(fname, "a");
     fwrite(samp_buf, sizeof(int16_t), NSAMP_OUTPUT, fp);
     fclose(fp);
