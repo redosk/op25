@@ -424,6 +424,19 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
 			snd *= 32768.0;
 		samp_buf[i] = snd;
 	}
+
+	char fname[150];
+	char cwd[100];
+	char outputname[31];
+    getcwd(cwd,99);
+    sprintf(fname, "%s/chan-%d.id", cwd, d_chan);
+    FILE* fp = fopen(fname, "r");
+    fread(outputname, 1, 30);
+    fclose(fp);
+    sprintf(fname, "%s/%s.wav", cwd, outputfname);
+    fp = fopen(fname, "a");
+    fwrite(samp_buf, sizeof(int16_t), NSAMP_OUTPUT, fp);
+    fclose(fp);
 	output(samp_buf, slot_id);
 }
 
