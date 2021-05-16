@@ -428,7 +428,7 @@ void rx_sync::codeword(const uint8_t* cw, const enum codeword_types codeword_typ
 	char fname[1500];
 	char cwd[1400];
 	char outputname[101];
-    getcwd(cwd,99);
+    getcwd(cwd,1399);
     sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), slot_id);
     fprintf(stderr, "%s\n", fname);
     FILE* fp = fopen(fname, "r");
@@ -541,16 +541,30 @@ void rx_sync::rx_sym(const uint8_t sym)
         p25fdma.reset_timer();             // reset FDMA timer in case of long TDMA transmissions
 		break;
 	case RX_TYPE_DMR:
+	    char fname[1500];
+        char cwd[1400];
+        getcwd(cwd,1399);
+
 		// frame with explicit sync resets expiration counter
 		if (dmr.load_frame(symbol_ptr, unmute))
 			d_expires = d_symbol_count + MODE_DATA[d_current_type].expiration;
 
 		// update audio timeout counters etc
 		if (unmute && ((dmr.chan() + 1) & d_slot_mask)) {
-			if (!d_unmute_until[dmr.chan()])
+			if (!d_unmute_until[dmr.chan()]) {
 				if (d_debug >= 10) {
 					fprintf(stderr, "%s unmute channel(%d)\n", logts.get(d_msgq_id), dmr.chan());
 				}
+				// Test si fichier existe, sinon en créer un avec des UNK
+				sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), d_chan);
+                if (access(fname, f_OK) != 0) {
+                    FILE *fp = fopen(fname, "w");
+                    const char *ts = logts.get(d_msgq_id);
+                    fprintf(fp, "%c%c%c%c%c%c_%c%c%c%c%c%c-UNK-UNK", ts[6], ts[7], ts[0], ts[1], ts[3], ts[4], ts[9], ts[10], ts[12], ts[13], ts[15], ts[16]);
+                    fclose(fp);
+                    if (d_debug >= 1) fprintf(stderr, "No data for channel %d, creating an UNK call file.\n", logts.get(d_msgq_id), dmr.chan());
+                }
+			}
 			d_unmute_until[dmr.chan()] = d_symbol_count + MODE_DATA[d_current_type].expiration;
 		}
 		if (!unmute || (d_symbol_count >= d_unmute_until[dmr.chan()])) {
@@ -559,6 +573,12 @@ void rx_sync::rx_sym(const uint8_t sym)
 				d_audio.send_audio_flag_channel(op25_audio::DRAIN, dmr.chan());
 				if (d_debug >= 10) {
 					fprintf(stderr, "%s mute channel(%d)\n", logts.get(d_msgq_id), dmr.chan());
+				}
+				// Supprimer le fichier avec identifiant de call
+				sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), d_chan);
+				if (access(fname, f_OK) == 0) {
+				    remove(fname);
+                    if (d_debug >= 1) fprintf(stderr, "Removing data call file for channel %d.\n", logts.get(d_msgq_id), dmr.chan());
 				}
 			}
 			break;

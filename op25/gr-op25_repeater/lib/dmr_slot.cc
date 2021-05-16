@@ -551,7 +551,7 @@ dmr_slot::decode_vlch(uint8_t* vlch) {
 	send_msg(lc_msg, M_DMR_SLOT_VLC);
 
     char cwd[1400];
-    getcwd(cwd,99);
+    getcwd(cwd,1399);
     sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), d_chan);
 
 	if (d_debug >= 10) {
