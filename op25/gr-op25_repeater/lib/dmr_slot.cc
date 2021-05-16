@@ -533,7 +533,7 @@ dmr_slot::decode_pdp_34data(uint8_t* pdp) {
 
 bool
 dmr_slot::decode_vlch(uint8_t* vlch) {
-    char fname[20];
+    char fname[120];
 	// Apply VLCH mask
 	for (int i = 0; i < 24; i++)
 		vlch[i+72] ^= VOICE_LC_HEADER_CRC_MASK[i];
@@ -550,14 +550,17 @@ dmr_slot::decode_vlch(uint8_t* vlch) {
 	}
 	send_msg(lc_msg, M_DMR_SLOT_VLC);
 
-    sprintf(fname, "/tmp/chan-%d-%x.id", d_chan, get_slot_cc());
+    char cwd[100];
+    getcwd(cwd,99);
+    sprintf(fname, "%s/chan-%d.id", cwd, d_chan);
 
 	if (d_debug >= 10) {
-		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d, fname = %s\n",  logts.get(d_msgq_id),	d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs, fname);
+		fprintf(stderr, "%s Slot(%d), CC(%x), VOICE LC PF(%d), FLCO(%02x), FID(%02x), SVCOPT(%02X), DSTADDR(%06x), SRCADDR(%06x), rs_errs=%d\n",  logts.get(d_msgq_id),	d_chan, get_slot_cc(), get_lc_pf(), get_lc_flco(), get_lc_fid(), get_lc_svcopt(), get_lc_dstaddr(), get_lc_srcaddr(), rs_errs);
 	}
 
     FILE *fp = fopen(fname, "w");
-    fprintf(fp, "%s|%d|%d", logts.get(d_msgq_id), get_lc_dstaddr(), get_lc_srcaddr());
+    char *ts = logts.get(d_msgq_id);
+    fprintf(fp, "%c%c%c%c%c%c_%c%c%c%c%c%c-%d-%d", ts[6], ts[7], ts[0], ts[1], ts[3], ts[4], ts[9], ts[10], ts[12], ts[13], ts[15], ts[16], get_lc_dstaddr(), get_lc_srcaddr()&0xffff);
     fclose(fp);
 	// TODO: add known FLCO opcodes
 
