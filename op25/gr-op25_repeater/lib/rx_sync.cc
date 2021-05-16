@@ -577,7 +577,16 @@ void rx_sync::rx_sym(const uint8_t sym)
 				// Supprimer le fichier avec identifiant de call
 				sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), dmr.chan());
 				if (access(fname, F_OK) == 0) {
+				    // création fichier fin d'appel
+                    char outputname[101];
+                    FILE* fp = fopen(fname, "r");
+                    int nb = fread(outputname, 1, 30, fp);
+                    outputname[nb] = '\0';
+                    fclose(fp);
 				    remove(fname);
+                    sprintf(fname, "%s/records/%s.finished", cwd, outputname);
+                    fp = fopen(fname, "w");
+                    fclose(fp);
                     if (d_debug >= 1) fprintf(stderr, "Removing data call file for channel %d.\n", logts.get(d_msgq_id), dmr.chan());
 				}
 			}
