@@ -557,7 +557,7 @@ void rx_sync::rx_sym(const uint8_t sym)
 				}
 				// Test si fichier existe, sinon en créer un avec des UNK
 				sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), d_chan);
-                if (access(fname, f_OK) != 0) {
+                if (access(fname, F_OK) != 0) {
                     FILE *fp = fopen(fname, "w");
                     const char *ts = logts.get(d_msgq_id);
                     fprintf(fp, "%c%c%c%c%c%c_%c%c%c%c%c%c-UNK-UNK", ts[6], ts[7], ts[0], ts[1], ts[3], ts[4], ts[9], ts[10], ts[12], ts[13], ts[15], ts[16]);
@@ -576,7 +576,7 @@ void rx_sync::rx_sym(const uint8_t sym)
 				}
 				// Supprimer le fichier avec identifiant de call
 				sprintf(fname, "%s/records/chan-%d-%d.id", cwd, getpid(), d_chan);
-				if (access(fname, f_OK) == 0) {
+				if (access(fname, F_OK) == 0) {
 				    remove(fname);
                     if (d_debug >= 1) fprintf(stderr, "Removing data call file for channel %d.\n", logts.get(d_msgq_id), dmr.chan());
 				}
